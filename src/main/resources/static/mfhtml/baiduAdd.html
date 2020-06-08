@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css"/>
+    <script src="../lib/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/public.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/vue.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/axios.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="formDiv" id="app">
+    <table class="layui-table">
+        <colgroup>
+            <col width="200">
+            <col>
+        </colgroup>
+        <tbody>
+        <tr>
+            <td>网站名称<span class="notnull"></span></td>
+            <td>
+                <input type="text" v-model="bd_website" placeholder="网站名称" autocomplete="off" class="layui-input">
+            </td>
+        </tr>
+        <tr>
+            <td>域名<span class="notnull"></span></td>
+            <td>
+                <input type="text" v-model="bd_domain" placeholder="输入域名。如：xxx.com、yy.xxx.com" autocomplete="off"
+                       class="layui-input">
+            </td>
+        </tr>
+        <tr>
+            <td>统计报告网址<span class="notnull"></span></td>
+            <td>
+                <input type="text" v-model="bd_statistics_url" placeholder="百度统计报告地址" autocomplete="off"
+                       class="layui-input">
+            </td>
+        </tr>
+        <tr>
+            <td>统计代码（JS脚本）<span class="notnull"></span></td>
+            <td>
+                <textarea v-model="bd_js" class="layui-textarea" placeholder="粘贴获取到的js脚本"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>备注说明</td>
+            <td>
+                <textarea v-model="bd_msg" class="layui-textarea" placeholder="备注说明"></textarea>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <button @click="ok" class="layui-btn layui-btn-fluid">确定</button>
+</div>
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            bd_website: '',
+            bd_domain: '',
+            bd_msg: '',//备注
+            bd_statistics_url: '',
+            bd_js: ''
+        },
+        methods: {
+            ok() {
+                if (this.bd_website != "" && this.bd_domain != "" && this.bd_statistics_url != "" && this.bd_js != "") {
+                    //提交表单
+                    let data = new FormData();
+                    data.append('bdWebsite', this.bd_website);
+                    data.append('bdDomain', this.bd_domain);
+                    data.append('bdMsg', this.bd_msg);
+                    data.append('bdStatisticsUrl', this.bd_statistics_url);
+                    data.append('bdJs', this.bd_js);
+                    axios.post('/baidu/add', data)
+                        .then(res => {
+                            alert('添加成功！', function () {
+                                parent.location.reload();
+                            });
+                        })
+                } else {
+                    alert('必填项不能为空！', {icon: 0});
+                }
+            }
+        }
+    })
+</script>
+</html>

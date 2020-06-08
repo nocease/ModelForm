@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../lib/layui/css/layui.css">
+    <script src="../lib/layui/layui.all.js"></script>
+    <script src="../js/public.js"></script>
+    <script src="../lib/vue.js"></script>
+    <script src="../lib/axios.js"></script>
+    <link rel="stylesheet" href="../lib/pretty-checkbox.css">
+</head>
+<style>
+    .layui-form-item {
+        margin: 0;
+        position: relative;
+        left: -110px
+    }
+</style>
+<body>
+<div id="app">
+    <table class="layui-table">
+        <tbody>
+        <tr>
+            <td>页面标题<span class="notnull"></span></td>
+            <td><input type="text" class="layui-input" placeholder="页面的标题" v-model="title"></td>
+        </tr>
+        <tr>
+            <td>页面类型<span class="notnull"></span></td>
+            <td>
+                <div class="pretty p-icon p-round">
+                    <input type="radio" name="icon_solid" v-model="pagetype" value="0"/>
+                    <div class="state p-success">
+                        <i class="icon mdi mdi-check"></i>
+                        <label>浏览页面</label>
+                    </div>
+                </div>
+                <div class="pretty p-icon p-round">
+                    <input type="radio" name="icon_solid" v-model="pagetype" value="1"/>
+                    <div class="state p-success">
+                        <i class="icon mdi mdi-check"></i>
+                        <label>新建页面</label>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>选择表单<span class="notnull"></span></td>
+            <td>
+                <select name="city" v-model="selectForm" class="layui-input">
+                    <option v-for="form in formNames" :value="form.id">{{form.formName}}</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>页面功能描述</td>
+            <td>
+                <textarea id="desc" class="layui-textarea" placeholder="描述页面功能" v-model="descb"></textarea>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <button @click="ok()" class="layui-btn layui-btn-fluid">确定</button>
+</div>
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            title: '',
+            pagetype: 1,
+            selectForm: '',
+            formNames: [],
+            descb: ''
+        },
+        created() {
+            //查询可初始化的表单
+            this.getCanAddForm();
+        },
+        methods: {
+            //提交
+            ok() {
+                if (this.title == '') {
+                    tip_notnull();
+                } else {
+                    let param = new URLSearchParams();
+                    param.append('title', this.title);
+                    param.append('message', this.descb);
+                    param.append('formid', this.selectForm);
+                    param.append('pagetype', this.pagetype);
+                    axios.post("/page/addPage", param).then(res => {
+                        alert("添加成功！", function () {
+                            parent.location.reload();
+                        })
+                    }).catch(err => {
+                        layer.msg(err)
+                    });
+                }
+            },
+            //可以初始化页面的表单
+            getCanAddForm() {
+                axios.get("/form/getAllFormNoPage?pagetype=" + this.pagetype).then(res => {
+                    this.formNames = res.data;
+                    this.selectForm = res.data[0].id;
+                }).catch(err => {
+                    layer.msg(err)
+                });
+            }
+        },
+        watch: {
+            pagetype() {
+                //查询可初始化的表单
+                this.getCanAddForm();
+            }
+        }
+    });
+</script>
+</html>

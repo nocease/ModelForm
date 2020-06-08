@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="../lib/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css"/>
+    <script src="../js/public.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/Convert_Pinyin.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="formDiv">
+    <table class="layui-table">
+        <colgroup>
+            <col width="120">
+            <col>
+        </colgroup>
+        <tbody>
+        <tr>
+            <td>表单名称<span class="notnull"></span></td>
+            <td>
+                <input type="text" id="formName" placeholder="表单标识" autocomplete="off" class="layui-input">
+            </td>
+        </tr>
+        <tr>
+            <td>数据库表名<span class="notnull"></span></td>
+            <td>
+                <input type="text" id="tableName" placeholder="自动生成的数据库表名" autocomplete="off" class="layui-input">
+            </td>
+        </tr>
+        <tr>
+            <td>表单描述</td>
+            <td>
+                <textarea id="desc" class="layui-textarea" placeholder="描述表单用途"></textarea>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <button id="ok" class="layui-btn layui-btn-fluid">确定</button>
+</div>
+</body>
+<script type="text/javascript">
+    $("#ok").click(function () {
+        var formName = $("#formName").val();
+        var tableName = $("#tableName").val();
+        var desc = $("#desc").val();
+        if (formName == "" || tableName == "") {
+            tip_notnull();
+        } else {
+            if (ifHas(tableName)) {
+                alert("数据库表名已存在！", {
+                    icon: 0
+                });
+                $("#tableName").val("");
+                $("#formName").val("");
+            } else {
+                $.ajax({
+                    url: '/form/add',
+                    data: {
+                        formName: formName,
+                        formTablename: tableName,
+                        formDescribe: desc,
+                        formState: "1"
+                    },
+                    async: false,
+                    success: function (bool) {
+                        if (bool) {
+                            alert("建表成功！", function () {
+                                parent.location.reload();
+                            })
+                        } else {
+                            alert("建表失败！请检查填写的信息。");
+                        }
+                    }
+                })
+            }
+        }
+    });
+
+    //失去焦点时自动生成表名
+    $("#formName").blur(function () {
+        $("#tableName").val("UF_" + pinyin.getCamelChars($("#formName").val()).toUpperCase());
+        if (ifHas($("#tableName").val())) {
+            $("#tableName").val($("#tableName").val() + "_1")
+        }
+        if (!checkResult($("#tableName").val(), /^[0-9a-zA-Z_]{1,}$/)) {
+            alert("数据库表名只能包含字母、数字和下划线！", {
+                icon: 0
+            });
+            $("#tableName").val("");
+            $("#formName").val("");
+        }
+    })
+
+
+    //判断表名是否存在
+    function ifHas(tablename) {
+        var b = true;
+        $.ajax({
+            url: '/form/ifHas',
+            data: {
+                tableName: tablename
+            },
+            async: false,
+            success: function (bool) {
+                b = bool;
+            }
+        })
+        return b;
+    }
+</script>
+</html>

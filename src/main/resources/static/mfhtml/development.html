@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+    <link href="../lib/codemirror/lib/codemirror.css" rel="stylesheet" type="text/css">
+    <link href="../lib/codemirror/theme/monokai.css" rel="stylesheet" type="text/css">
+    <link href="../lib/codemirror/addon/display/fullscreen.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="../lib/codemirror/addon/hint/show-hint.css"/>
+    <script type="text/javascript" src="../lib/codemirror/lib/codemirror.js"></script>
+    <script type="text/javascript" src="../lib/codemirror/mode/javascript/javascript.js"></script>
+    <script type="text/javascript" src="../lib/codemirror/mode/xml/xml.js"></script>
+    <script type="text/javascript" src="../lib/codemirror/mode/css/css.js"></script>
+    <script type="text/javascript" src="../lib/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+    <script type="text/javascript" src="../lib/codemirror/addon/selection/active-line.js"></script>
+    <script type="text/javascript" src="../lib/codemirror/addon/edit/matchbrackets.js"></script>
+    <script type="text/javascript" src="../lib/codemirror/addon/display/fullscreen.js"></script>
+    <link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css"/>
+    <script src="../lib/layui/layui.all.js" type="text/javascript" charset="utf-8" media="all"></script>
+    <script src="../lib/axios.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/public.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/CorsAjax.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<style type="text/css">
+    .CodeMirror {
+        width: 100%;
+        height: 500px;
+    }
+</style>
+<body class="layui-layout-body">
+<div class="main">
+    <!-- 左侧导航 -->
+    <div class="main_left">
+        <div class="li_title">用户管理<span class="down"></span></div>
+        <ul class="layui-nav layui-nav-tree" lay-filter="nav">
+            <ul class="layui-nav layui-nav-tree layui-nav-side">
+                <li class="layui-nav-item layui-nav-itemed layui-this">
+                    <a href="javascript:;" style="font-weight: 900" onclick="location.reload();">开发文档</a>
+                </li>
+                <li class="layui-nav-item layui-nav-itemed">
+                    <a href="javascript:;" style="font-size: 17px">新建页面</a>
+                    <dl class="layui-nav-child" id="addpage"></dl>
+                </li>
+                <li class="layui-nav-item layui-nav-itemed">
+                    <a href="javascript:;" style="font-size: 17px">浏览页面</a>
+                    <dl class="layui-nav-child" id="listpage"></dl>
+                </li>
+            </ul>
+        </ul>
+    </div>
+    <!-- 右侧内容 -->
+    <div class="main_right">
+        <div style="margin:0px 100px 0px 250px">
+            <div id="kfzwd">
+                <!--  开发文档-->
+                <iframe src="devDocuments.htm" width="100%" height="650px" frameborder="0"></iframe>
+            </div>
+            <div id="bjq" style="display: none">
+                <div style="position: absolute;left: 300px">
+                    <h2 id="h2title"></h2>
+                    <input type="hidden" id="pageid"/>
+                </div>
+                <div class="layui-btn-group" style="position: absolute;right: 100px">
+                    <button onclick="beautiful()" class="layui-btn layui-btn-sm">美化</button>
+                    <button onclick="clean()" class="layui-btn layui-btn-sm">清空</button>
+                    <button onclick="keep(1)" class="layui-btn layui-btn-sm">保存</button>
+                    <button id="yulan" class="layui-btn layui-btn-sm">预览</button>
+                </div>
+                <div style="position: relative;top:30px">
+                    <textarea id="code" name="code" style="display: none"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+    //清空内容
+    function clean() {
+        index = layer.confirm('确定清空代码？', function () {
+            editor.setValue("");
+            layer.close(index);
+        })
+    }
+
+    //美化代码
+    function beautiful() {
+        CorsAjax({
+            url: 'https://tool.lu/js/ajax.html',
+            type: 'post',
+            data: {
+                operate: 'beauty',
+                code: editor.getValue()
+            },
+            success: function (d) {
+                editor.setValue(JSON.parse(d).text);
+                layer.msg("OK!", {icon: 1});
+            }
+        })
+    }
+
+    //保存
+    function keep(i) {
+        var data = editor.getValue();
+        $.ajax({
+            url: '/page/upd',
+            type: 'post',
+            data: {
+                id: $("#pageid").val(),
+                importscript: data
+            },
+            success: function (d) {
+                if (i == 1)
+                    layer.msg("保存成功！", {icon: 1});
+            },
+            error: function (err) {
+                alert("错误：" + JSON.stringify(err), {icon: 2});
+            }
+        })
+    }
+
+    //新建
+    function add() {
+        editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true, // 显示行数
+            indentUnit: 4, // 缩进单位为4
+            styleActiveLine: true, // 当前行背景高亮
+            matchBrackets: true, // 括号匹配
+            mode: 'javascript', // 模式htmlmixed/javascript
+            lineWrapping: true, // 自动换行
+            theme: "monokai", // 使用monokai模版
+        });
+        editor.setOption("extraKeys", {
+            // Tab键换成4个空格
+            Tab: function (cm) {
+                var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
+                cm.replaceSelection(spaces);
+            }
+        });
+        editor.setSize('100%', '600px');
+    }
+
+    //删除
+    function del() {
+        $(".CodeMirror").remove();
+    }
+
+    //切换页面
+    function setPage(pageid, title, pagetype) {
+        if ($("#pageid").val() != "")
+            keep(0);
+        $("#pageid").val(pageid);
+        $('#kfzwd').css("display", "none");
+        $('#bjq').css("display", "");
+        $('#h2title').text(title);
+        del();
+        add();
+        $.ajax({
+            url: '/page/getOnePage?id=' + $("#pageid").val(),
+            type: 'get',
+            async: false,
+            success: function (data) {
+                editor.setValue(data.importscript || '');
+            }
+        })
+
+        document.getElementById("yulan").onclick = function () {
+            if (pagetype == "0") {
+                window.open("/userhtml/list.html?pageid=" + pageid);
+            } else if (pagetype == "1") {
+                window.open("/userhtml/add.html?pageid=" + pageid);
+            }
+        };
+    }
+
+    //初始化页面选项
+    axios.get("/page/list").then(res => {
+        var list = res.data.data;
+        for (let i = 0; i < list.length; i++) {
+            if (list[i].pagetype == "0") {
+                document.getElementById("listpage").innerHTML += '<dd><a href="javascript:;" onclick="setPage(\'' + list[i].id + '\',\'' + list[i].title + '\',\'' + list[i].pagetype + '\')">' + list[i].title + '</a></dd> ';
+            } else if (list[i].pagetype == "1") {
+                document.getElementById("addpage").innerHTML += '<dd><a href="javascript:;" onclick="setPage(\'' + list[i].id + '\',\'' + list[i].title + '\',\'' + list[i].pagetype + '\')">' + list[i].title + '</a></dd> ';
+            }
+        }
+        eval('layui.element.render(\'nav\');');
+    });
+</script>
+</html>

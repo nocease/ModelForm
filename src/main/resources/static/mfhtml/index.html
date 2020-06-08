@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"/>
+    <link rel="icon" type="image/png" href="../img/logo.ico"/>
+    <script src="../lib/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css"/>
+    <title>表单建模引擎 - 开发者中心</title>
+    <!-- 让IE8/9支持媒体查询，从而兼容栅格 -->
+    <!--    <script src="../lib/layui/IEshiv/html5.js"></script>-->
+    <!--    <script src="../lib/layui/IEshiv/respond.js"></script>-->
+    <!--    常用公用js方法-->
+    <script src="../js/public.js"></script>
+    <!--    本页面css-->
+    <link rel="stylesheet" href="../css/index.css">
+</head>
+<body>
+<!--向右上角添加GitHub内容-->
+<div id="github"></div>
+<!--    添加github图标-->
+<script src="../js/github.js"></script>
+
+<div class="layui-container">
+    <!--标题-->
+    <fieldset id="fieldset1" class="layui-elem-field layui-field-title" onclick="location.reload()">
+        <legend style="font-weight: bold" class="layui-anim layui-anim-up">
+            <img src="../img/logo.ico" width="30px"/>表单建模引擎_V1.2
+        </legend>
+    </fieldset>
+    <!--    菜单-->
+    <div class="layui-row layui-col-space5">
+        <div class="layui-col-md4">
+            <div class="grid-demo grid-demo-bg1">
+                <div class="div1" onclick="fullShow('formList.html','表单管理')">
+                    <i class="layui-icon layui-icon-template-1" style="font-size: 100px"></i>
+                    <p>表单管理</p>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4">
+            <div class="grid-demo grid-demo-bg1">
+                <div class="div1" onclick="fullShow('pageList.html','初始化页面')">
+                    <i class="layui-icon layui-icon-read" style="font-size: 100px"></i>
+                    <p>初始化页面</p>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4">
+            <div class="grid-demo grid-demo-bg1">
+                <div class="div1" onclick="fullShow('development.html','无侵入式二次开发')">
+                    <i class="layui-icon layui-icon-survey" style="font-size: 100px"></i>
+                    <p>无侵入式二次开发</p>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4">
+            <div class="grid-demo grid-demo-bg1">
+                <div class="div1" onclick="fullShow('baiduStatistics.html','百度统计')">
+                    <i class="layui-icon layui-icon-component" style="font-size: 100px"></i>
+                    <p>百度统计</p>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4">
+            <div class="grid-demo grid-demo-bg1">
+                <div class="div1" onclick="fullShow('log.html','监控系统')">
+                    <i class="layui-icon layui-icon-template" style="font-size: 100px"></i>
+                    <p>监控系统</p>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md4" onmousemove="over()" onmouseout="out()">
+            <div class="grid-demo grid-demo-bg1">
+                <div class="div1" onclick="fullShow('propSet.html','配置信息')">
+                    <i class="layui-icon layui-icon-set" style="font-size: 100px"></i>
+                    <p>配置信息</p>
+                </div>
+                <!--                <div class="div1" id="test2" style="display: none">-->
+                <!--                    <i class="layui-icon layui-icon-close-fill" style="font-size: 60px;color: red"></i>-->
+                <!--                    <p>暂不可用</p>-->
+                <!--                </div>-->
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" color="black" opacity="0.6" count="70" src="../lib/canvas-nest.js"></script>
+</body>
+<script>
+    //设置图标动画
+    $(".div1").addClass("layui-anim layui-anim-scaleSpring");
+
+    //全屏打开html的方法
+    //动画类型0-6
+    function fullShow(url, title) {
+        var index = layer.open({
+            type: 2,
+            content: url,
+            title: title,
+            maxmin: true,
+            anim: getRandom(0, 6),
+            area: ['800px', '600px']
+        });
+        layer.full(index);
+    }
+
+    //去掉遮罩
+    $('body').click(function () {
+        $(".layui-layer-shade").css('display', 'none');
+    })
+
+
+    //鼠标移入移出
+    function over() {
+        $("#test1").css('display', "none");
+        $("#test2").css('display', "");
+    }
+
+    function out() {
+        $("#test1").css('display', "");
+        $("#test2").css('display', "none");
+    }
+</script>
+</html>

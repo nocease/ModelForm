@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../lib/layui/css/layui.css">
+    <script src="../lib/vue.js"></script>
+    <script src="../lib/layui/layui.all.js"></script>
+    <script src="../lib/axios.js"></script>
+    <script src="../js/public.js"></script>
+</head>
+<style>
+    p {
+        font-weight: bold;
+        text-align: center;
+    }
+</style>
+<body>
+<div id="app">
+    <p>表单详情</p>
+    <table class="layui-table" lay-size="sm">
+        <tbody>
+        <tr>
+            <td>ID</td>
+            <td>{{id}}</td>
+        </tr>
+        <tr>
+            <td>数据库表</td>
+            <td>{{formTablename}}</td>
+        </tr>
+        <tr>
+            <td>创建时间</td>
+            <td>{{formTime}}</td>
+        </tr>
+        <tr>
+            <td>名称</td>
+            <td>{{formName}}</td>
+        </tr>
+        <tr>
+            <td>描述</td>
+            <td>{{formDescribe}}</td>
+        </tr>
+        <tr>
+            <td>字段</td>
+            <td>
+                <div v-for="(item,index) in allField">{{item.fieldNameDesc}}—{{item.fieldName}}</div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            id: "",
+            formName: "",
+            formTablename: "",
+            formDescribe: "",
+            formTime: "",
+            allField: {}
+        },
+        created() {
+            axios.post("/form/getOnrFormById?id=" + geturl("id")).then(res => {
+                this.id = res.data.formId;
+                this.formName = res.data.formName;
+                this.formTablename = res.data.formTablename;
+                this.formDescribe = res.data.formDescribe;
+                this.formTime = res.data.formTime;
+            }).catch(err => {
+                layer.msg(err);
+            });
+
+            axios.post("/field/getFormFieldById?id=" + geturl("id")).then(res => {
+                this.allField = res.data;
+                //alert(JSON.stringify(res.data))
+            }).catch(err => {
+                layer.msg(err);
+            });
+        }
+    });
+</script>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css"/>
+    <link rel="stylesheet" type="text/css" href="../lib/pretty-checkbox.css"/>
+    <script src="../lib/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/public.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/vue.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/axios.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="formDiv" id="app">
+    <table class="layui-table" lay-skin="line" lay-size="sm">
+        <colgroup>
+            <col width="150">
+            <col width="200">
+            <col>
+        </colgroup>
+        <thead>
+        <tr>
+            <th>选择要统计的页面：</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="item in list">
+            <td>
+                <div class="pretty p-default">
+                    <input class="checked" type="checkbox" :value="item.id" v-model="item.selected"/>
+                    <div class="state p-success">
+                        <label>{{item.title}}（{{item.id}}）</label>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <button @click="ok" class="layui-btn layui-btn-fluid">确定</button>
+</div>
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            canlist: [],//可选页面
+            list: [],//全部页面
+            maxlength: 0,
+        },
+        created() {
+            axios.get('/baidu/getAllPage').then(res1 => {
+                var list = res1.data;
+                for (let i = 0; i < list.length; i++) {
+                    list[i].selected = false;
+                }
+                this.canlist = list;
+                axios.get('/baidu/getAllisPage?bdId=' + geturl("bdId")).then(res2 => {
+                    var list = res2.data;
+                    var allList = this.canlist;
+                    for (let i = 0; i < list.length; i++) {
+                        list[i].selected = true;
+                        allList.push(list[i]);
+                    }
+                    this.list = allList;
+                    //console.log(this.list)
+                });
+            });
+
+        },
+        methods: {
+            ok() {
+                var list = this.list;
+                var ids = [];//页面id集合
+                for (let i = 0; i < list.length; i++) {
+                    if (list[i].selected == true) {
+                        ids.push(list[i].id);
+                    }
+                }
+
+                var form1 = new FormData();
+                form1.append('pageids', ids);
+                form1.append('bdId', geturl("bdId"));
+                axios.post('/baidu/addpage', form1).then(res => {
+                    alert("保存成功！", function () {
+                        parent.location.reload();
+                    });
+                });
+            }
+        }
+    })
+</script>
+</html>

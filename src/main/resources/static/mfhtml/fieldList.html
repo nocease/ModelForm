@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="../lib/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css"/>
+    <script src="../lib/axios.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/public.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="formDiv">
+    <table class="layui-table" id="demo" lay-filter="demo"></table>
+</div>
+</body>
+<script type="text/javascript">
+    //初始化表格
+    table.render({
+        elem: '#demo',
+        url: '/field/get?tableId=' + geturl("tableid"),
+        page: true,
+        initSort: {
+            field: 'fieldTime',
+            type: 'desc'
+        },
+        toolbar: '<div class="layui-inline"><div class="layui-inline"><input class="layui-input" style="width:150px" id="searchInput" placeholder="搜索:" /></div>&nbsp<div class="layui-inline"><button class="layui-btn layui-btn-sm" lay-event="search"><i class="layui-icon layui-icon-search"></i></button></div><span>&nbsp;&nbsp;&nbsp;</span><div class="layui-inline"><button class="layui-btn layui-btn-sm layui-icon layui-icon-refresh" onclick="location.reload()"> 刷新数据</button></div><span>&nbsp;&nbsp;&nbsp;</span><div class="layui-inline"><button class="layui-btn layui-btn-sm layui-icon layui-icon-add-1" lay-event="add"> 添加字段</button></div></div>',
+        cols: [
+            [
+                {
+                    type: 'numbers',
+                    title: '序号'
+                },
+                {
+                    field: 'fieldId',
+                    title: '编号',
+                    width: '7%'
+                },
+                {
+                    field: 'fieldTime',
+                    title: '创建时间',
+                    width: 160,
+                    sort: true
+                },
+                {
+                    field: 'fieldNameDesc',
+                    title: '字段说明',
+                    edit: 'text',
+                    sort: true
+                },
+                {
+                    field: 'fieldName',
+                    title: '对应表字段',
+                    sort: true
+                },
+                {
+                    title: '字段类型说明',
+                    templet: function (res) {
+                        var type = "";
+                        if (res.fieldType == 1) {//单行文本
+                            type = "单行文本/" + res.fieldZzDesc + "：" + res.fieldZzTest;
+                        } else if (res.fieldType == 2) {//单选select
+                            type = "单选框:" + res.fieldSelectValue;
+                        } else if (res.fieldType == 3) {//多选checkbox
+                            type = "多选框:" + res.fieldSelectValue;
+                        } else if (res.fieldType == 4) {//富文本框
+                            type = "富文本框";
+                        } else if (res.fieldType == 5) {//文件上传
+                            if (res.fieldFiletype == 1) {
+                                type = "任意文件";
+                            } else if (res.fieldFiletype == 2) {
+                                type = "图片";
+                            } else if (res.fieldFiletype == 3) {
+                                type = "文档";
+                            }
+                        } else if (res.fieldType == 6) {//日期时间
+                            if (res.fieldTimetype == 1) {
+                                type = "日期+时间";
+                            } else if (res.fieldTimetype == 2) {
+                                type = "日期";
+                            } else if (res.fieldTimetype == 3) {
+                                type = "时间";
+                            }
+                        }
+                        return type;
+                    }
+                }
+            ]
+        ]
+    });
+
+    //监听编辑
+    table.on('edit(demo)', function (obj) {
+        var data = obj.data; //所在行的所有相关数据
+        var value = obj.value; //得到修改后的值
+        var field = obj.field; //当前列：编辑的字段名
+        if (value == "") {
+            layer.msg("未修改！不能改为空。");
+            tableReload();
+        } else {
+            axios.get('/field/upd?fieldNameDesc=' + value + "&fieldId=" + data.fieldId).then(res => {
+                layer.msg("修改成功！")
+            }).catch(err => {
+                layer.msg("操作失败：" + err)
+            });
+        }
+    });
+
+    //监听头事件
+    table.on('toolbar(demo)', function (obj) {
+        var layEvent = obj.event;
+        if (layEvent == "search") {
+            tableReload();
+        } else if (layEvent == "add") {
+            if (isUse(geturl("tableid"))) {
+                alert("该表单已初始化页面，无法再添加字段！", {
+                    icon: 0
+                });
+            } else {
+                layer.open({
+                    type: 2,
+                    content: 'fieldAdd.html?tableid=' + geturl("tableid"),
+                    title: '添加字段',
+                    anim: getRandom(0, 6),
+                    area: ['700px', '450px']
+                });
+            }
+        }
+    });
+
+    //表格重载
+    function tableReload() {
+        var searchInput = $('#searchInput').val();
+        table.reload('demo', {
+            url: '/field/get?tableId=' + geturl("tableid"),
+            page: {
+                curr: $(".layui-laypage-em").next().html()  //主要代码行
+            },
+            where: {
+                str: searchInput
+            }
+        });
+        $('#searchInput').val(searchInput);
+    }
+
+    //某个表单是否被使用
+    function isUse(formid) {
+        var bool = true;
+        $.ajax({
+            url: '/page/isUseForm',
+            data: {formid: formid},
+            async: false,
+            type: 'get',
+            success: function (data) {
+                bool = data;
+            },
+            error: function (error) {
+                layer.msg(error);
+            }
+        })
+        return bool;
+    }
+</script>
+</html>

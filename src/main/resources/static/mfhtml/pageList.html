@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css"/>
+    <script src="../lib/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/axios.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/public.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="formDiv">
+    <table class="layui-table" id="demo" lay-filter="demo" width="100%"></table>
+</div>
+</body>
+<script type="text/javascript">
+    //初始化表格
+    table.render({
+        elem: '#demo',
+        url: '/page/list',
+        page: true,
+        initSort: {
+            field: 'ctime',
+            type: 'desc'
+        },
+        toolbar: '<span class="layui-inline"><div class="layui-inline"><input class="layui-input" style="width:150px" id="searchInput" placeholder="搜索:" /></div>&nbsp<div class="layui-inline"><button class="layui-btn layui-btn-sm" lay-event="search"><i class="layui-icon layui-icon-search"></i></button></div><span>&nbsp;&nbsp;&nbsp;</span><div class="layui-inline"><button class="layui-btn layui-btn-sm layui-icon layui-icon-refresh" onclick="location.reload()"> 刷新数据</button></div><span>&nbsp;&nbsp;&nbsp;</span><div class="layui-inline"><button class="layui-btn layui-btn-sm layui-icon layui-icon-add-1" lay-event="add"> 初始化新页面</button></div></div>',
+        cols: [
+            [
+                {
+                    type: 'numbers',
+                    title: '序号'
+                },
+                {
+                    field: 'id',
+                    // width: 100,
+                    title: '编号'
+                },
+                {
+                    field: 'ctime',
+                    // width: 160,
+                    title: '创建时间',
+                    sort: true
+                },
+                {
+                    field: 'title',
+                    title: '页面标题',
+                    sort: true,
+                    edit: 'text'
+                },
+                {
+                    field: 'htmlWidth',
+                    title: '页面宽度(%)',
+                    edit: 'text'
+                },
+                {
+                    field: 'message',
+                    title: '页面功能描述',
+                    edit: 'text',
+                    sort: true
+                },
+                {
+                    field: 'pagetype',
+                    title: '页面类型',
+                    sort: true,
+                    // width: 105,
+                    templet: function (res) {
+                        if (res.pagetype == "0") {
+                            return "<div><buttton class='layui-btn layui-btn-radius layui-btn-xs layui-btn-warm'>浏览页面</buttton></div>";
+                        } else if (res.pagetype == "1") {
+                            return "<div><buttton class='layui-btn layui-btn-radius layui-btn-xs layui-btn-normal'>新建页面</button></div>";
+                        }
+                    }
+                },
+                {
+                    field: 'formid',
+                    sort: true,
+                    // width: 110,
+                    title: '对应表单',
+                    templet: '<div><button class="layui-btn layui-btn-sm" lay-event="getform">查看表单</button></div>'
+                },
+                {
+                    width: 110,
+                    title: '页面设置',
+                    templet: '<div><button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="exitpage">编辑页面</button></div>'
+                },
+                {
+                    field: 'canuse',
+                    title: '页面状态',
+                    sort: true,
+                    width: 105,
+                    templet: function (res) {
+                        if (res.canuse == "0") {
+                            return "<div><button class='layui-btn layui-btn-sm layui-btn-danger' lay-event='qiyong'>已禁用</button></div>";
+                        } else if (res.canuse == "1") {
+                            return "<div><button class='layui-btn layui-btn-sm layui-btn-normal' lay-event='jinyong'>已启用</button></div>";
+                        }
+                    }
+                },
+                {
+                    title: '页面预览',
+                    width: 90,
+                    templet: function (res) {
+                        return '<div><button lay-event="yulan" class="layui-btn layui-btn-sm">预览页面</button></div>';
+                    }
+                }
+            ]
+        ]
+    });
+
+    //监听编辑
+    table.on('edit(demo)', function (obj) {
+        var data = obj.data; //所在行的所有相关数据
+        var value = obj.value; //得到修改后的值
+        var field = obj.field; //当前列：编辑的字段名
+        if (value == "") {
+            layer.msg("未修改！不能改为空。");
+            tableReload();
+        } else if (field == "htmlWidth") {
+            if (parseInt(value) > 9 && parseInt(value) < 101) {
+                axios.get('/page/upd?' + field + '=' + value + "&id=" + data.id).then(res => {
+                    layer.msg("修改成功！")
+                }).catch(err => {
+                    layer.msg("操作失败：" + err)
+                });
+            } else {
+                layer.msg("必须输入10-100的整数！");
+                tableReload();
+            }
+        } else {
+            axios.get('/page/upd?' + field + '=' + value + "&id=" + data.id).then(res => {
+                layer.msg("修改成功！")
+            }).catch(err => {
+                layer.msg("操作失败：" + err)
+            });
+        }
+    });
+
+    //监听行事件
+    table.on('tool(demo)', function (obj) {
+        var data = obj.data; //获得当前行数据
+        var layEvent = obj.event; //获得 lay-event
+
+        if (layEvent == "getform") {
+            var index = layer.open({
+                type: 2,
+                content: 'formGetone.html?id=' + data.formid,
+                title: '表单详情：' + data.title,
+                anim: getRandom(0, 6),
+                shadeClose: true,
+                area: ['500px', '450px']
+            });
+        } else if (layEvent == "qiyong") {
+            layer.confirm("确定启用吗？", function () {
+                axios.get('/page/updateState?canuse=' + data.canuse + '&id=' + data.id).then(res => {
+                    layer.msg("已启用！")
+                    tableReload();
+                });
+            });
+        } else if (layEvent == "jinyong") {
+            layer.confirm("确定禁用吗？", function () {
+                axios.get('/page/updateState?canuse=' + data.canuse + '&id=' + data.id).then(res => {
+                    layer.msg("已禁用！")
+                    tableReload();
+                });
+            });
+        } else if (layEvent == "exitpage") {
+            if (data.pagetype == "1") {
+                layer.open({
+                    type: 2,
+                    anim: getRandom(0, 6),
+                    title: '编辑页面：' + data.title + '（' + data.id + '）',
+                    area: ['1000px', '600px'],
+                    content: 'pageSetAdd.html?pageid=' + data.id
+                });
+            } else if (data.pagetype == "0") {
+                layer.open({
+                    type: 2,
+                    anim: getRandom(0, 6),
+                    title: '编辑页面：' + data.title + '（' + data.id + '）',
+                    area: ['1000px', '600px'],
+                    content: 'pageSetList.html?pageid=' + data.id
+                });
+            }
+        } else if (layEvent == "yulan") {
+            //预览页面
+            if (data.pagetype == "0") {
+                //浏览页面
+                //window.open("/userhtml/list.html?pageid=" + data.id + "&time=" + new Date().getTime());
+                window.open("/userhtml/list.html?pageid=" + data.id);
+            } else if (data.pagetype == "1") {
+                //新建页面
+                //window.open("/userhtml/add.html?pageid=" + data.id + "&time=" + new Date().getTime());
+                window.open("/userhtml/add.html?pageid=" + data.id);
+            }
+        }
+    });
+
+    //监听头事件
+    table.on('toolbar(demo)', function (obj) {
+        var layEvent = obj.event;
+        if (layEvent == "search") {
+            tableReload();
+        } else if (layEvent == "add") {
+            layer.open({
+                type: 2,
+                content: 'pageAdd.html',
+                title: '初始化新页面',
+                anim: getRandom(0, 6),
+                area: ['600px', '450px']
+            });
+        }
+    });
+
+    //表格重载
+    function tableReload() {
+        var searchInput = $('#searchInput').val();
+        table.reload('demo', {
+            url: '/page/list',
+            page: {
+                curr: $(".layui-laypage-em").next().html()  //主要代码行
+            },
+            where: {
+                title: searchInput
+            }
+        });
+        $('#searchInput').val(searchInput);
+    }
+</script>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../lib/pretty-checkbox.css">
+    <script src="../lib/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/vue.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/axios.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/public.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<style>
+    .layui-table {
+        text-align: center;
+    }
+</style>
+<body>
+<div id="app">
+    <table class="layui-table">
+        <tbody>
+        <tr>
+            <td><strong>字段名称</strong></td>
+            <td>{{fieldNameDesc}}</td>
+            <td><strong>字段id</strong></td>
+            <td>{{fieldId}}</td>
+        </tr>
+        <tr>
+            <td><strong>数据库表字段名</strong></td>
+            <td>{{fieldName}}</td>
+            <td><strong>字段类型</strong></td>
+            <td>{{fieldType}}</td>
+        </tr>
+        <tr>
+            <td><strong>默认值设置</strong></td>
+            <td colspan="3" style="height: 100px">
+                <div v-if="div1">
+                    <input type="text" v-model="dhwb" class="layui-input" placeholder="输入默认值：" autocomplete="off"/>
+                    <p>设置的结果为：{{dhwb}}</p>
+                    <span v-if="dhwbCanuse" style="color: green">√ 正则验证成功，可用</span>
+                    <span v-if="!dhwbCanuse" style="color: red">× 正则验证失败，不可用</span>
+                </div>
+                <div v-if="div2">
+                    <div class="pretty p-icon p-round">
+                        <input type="radio" name="icon_solid" checked v-model="danxuan" value=""/>
+                        <div class="state p-danger">
+                            <i class="icon mdi mdi-check"></i>
+                            <label>默认不选</label>
+                        </div>
+                    </div>
+                    <div class="pretty p-icon p-round" v-for="item in selectItems">
+                        <input type="radio" name="icon_solid" v-model="danxuan" :value="item.value"/>
+                        <div class="state p-success">
+                            <i class="icon mdi mdi-check"></i>
+                            <label>{{item.value}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="div3">
+                    <div class="pretty p-default" v-for="item in selectItems">
+                        <input type="checkbox" v-model="duoxuan" :value="item.value"/>
+                        <div class="state p-success">
+                            <label>{{item.value}}</label>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="div4">
+                    <textarea cols="80" rows="5" v-model="fwbk"></textarea>
+                </div>
+                <div v-if="div5">
+                    <p style="color: #FD482C">文件上传不支持设置初始值。</p>
+                </div>
+                <div v-if="div6">
+                    <input v-model="DFdatetime" class="layui-input" type="datetime-local" step="1">
+                    设置的结果为：{{DFdatetime}}
+                </div>
+                <div v-if="div7">
+                    <input v-model="DFdatetime" class="layui-input" type="date">
+                    设置的结果为：{{DFdatetime}}
+                </div>
+                <div v-if="div8">
+                    <input v-model="DFdatetime" class="layui-input" type="time" step="1">
+                    设置的结果为：{{DFdatetime}}
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+                <button @click="ok()" class="layui-btn layui-btn-sm">确定</button>
+                <button @click="closeNowPage()" class="layui-btn layui-btn-sm layui-btn-danger">取消
+                </button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            fieldId: '',
+            fieldNameDesc: '',
+            fieldName: '',
+            fieldType: '',//字段类型，已转化成文本
+            fieldtype: '',//id型字段类型1-6
+            zhz: '',//正则验证的内容
+            div1: false,//单行文本
+            dhwbCanuse: true,//单行文本可用
+            div2: false,//单选
+            danxuan: '',//单选的值
+            div3: false,//多选
+            duoxuan: [],//多选的选项
+            div4: false,//富文本
+            div5: false,//文件
+            div6: false,//日期时间
+            div7: false,//日期
+            div8: false,//时间
+            dhwb: '',//单行文本默认值
+            fwbk: '',//富文本默认值
+            DFdatetime: '',
+            selectItems: []//单选或多选的结果集
+        },
+        created() {
+            //获取字段信息
+            axios.get("/field/getOneFieldById?fieldid=" + geturl("fieldid")).then(res => {
+                //获取一个字段的信息
+                var fieldType = res.data.fieldType;
+                this.fieldtype = fieldType;
+                if (fieldType == "1") fieldType = '单行文本框(' + res.data.fieldZzDesc + ')' + res.data.fieldZzTest;
+                else if (fieldType == "2") fieldType = "单选框";
+                else if (fieldType == "3") fieldType = "多选框";
+                else if (fieldType == "4") fieldType = "富文本框";
+                else if (fieldType == "5") {
+                    if (res.data.fieldFiletype == "1") fieldType = "文件上传(任意文件)";
+                    else if (res.data.fieldFiletype == "2") fieldType = "文件上传（图片）";
+                    else if (res.data.fieldFiletype == "3") fieldType = "文件上传（office文档）";
+                } else if (fieldType == "6") {
+                    if (res.data.fieldTimetype == "1") fieldType = "日期+时间";
+                    else if (res.data.fieldTimetype == "2") fieldType = "日期";
+                    else if (res.data.fieldTimetype == "3") fieldType = "时间";
+                }
+                this.fieldId = geturl("fieldid");
+                this.zhz = res.data.fieldZzTest;
+                this.fieldNameDesc = res.data.fieldNameDesc;
+                this.fieldName = res.data.fieldName;
+                this.fieldType = fieldType;
+                //设置字段可选类型
+                if (res.data.fieldType == "1") {
+                    this.div1 = true;
+                    this.dhwb = res.data.defaultValue;
+                } else if (res.data.fieldType == "2") {
+                    this.div2 = true;
+                    this.selectItems = res.data.mfValues;
+                    this.danxuan = res.data.defaultValue;
+                } else if (res.data.fieldType == "3") {
+                    this.div3 = true;
+                    this.selectItems = res.data.mfValues;
+                    if (res.data.defaultValue != null)
+                        this.duoxuan = res.data.defaultValue.split(",");
+                    //this.duoxuan = res.data.defaultValue;
+                } else if (res.data.fieldType == "4") {
+                    this.div4 = true;
+                    this.fwbk = res.data.defaultValue;
+                } else if (res.data.fieldType == "5") {
+                    this.div5 = true;
+                } else if (res.data.fieldType == "6") {
+                    if (res.data.fieldTimetype == "1") {
+                        this.div6 = true;
+                    } else if (res.data.fieldTimetype == "2") {
+                        this.div7 = true;
+                    } else if (res.data.fieldTimetype == "3") {
+                        this.div8 = true;
+                    }
+                    this.DFdatetime = res.data.defaultValue;
+                }
+            }).catch(err => {
+                alert(JSON.stringify(err));
+            });
+        },
+        methods: {
+            //关闭当前弹出页
+            closeNowPage() {
+                parent.layer.close(parent.layer.getFrameIndex(window.name));
+            },
+            //提交表单
+            ok() {
+                var postMess = "";
+                if (this.fieldtype == "1") {
+                    //单行文本
+                    if (this.dhwbCanuse) {
+                        postMess = this.dhwb
+                    } else return;
+                } else if (this.fieldtype == "2") {
+                    //单选
+                    postMess = this.danxuan;
+                } else if (this.fieldtype == "3") {
+                    //多选
+                    postMess = this.duoxuan + "";
+                    //alert(postMess);
+                } else if (this.fieldtype == "4") {
+                    //富文本
+                    postMess = this.fwbk;
+                } else if (this.fieldtype == "5") {
+                    //文件上传
+                    return;
+                } else if (this.fieldtype == "6") {
+                    //时间日期
+                    postMess = this.DFdatetime;
+                }
+                var data = new FormData();
+                data.append('pageid', geturl("pageid"));
+                data.append('fieldid', geturl("fieldid"));
+                data.append('defaultvalue', postMess);
+                axios.post('/pageAddSet/updDefaultValue', data).then(res => {
+                    this.closeNowPage();
+                    parent.layer.msg("已完成");
+                }).catch(err => {
+                    alert(JSON.stringify(err));
+                });
+            }
+        },
+        watch: {
+            //单行文本的值修改时
+            dhwb() {
+                if (this.zhz != null) {
+                    var zhzbds = new RegExp(this.zhz);
+                    if (zhzbds.test(this.dhwb)) {
+                        this.dhwbCanuse = true;
+                    } else {
+                        this.dhwbCanuse = false;
+                    }
+                }
+            }
+        }
+    });
+</script>
+</html>

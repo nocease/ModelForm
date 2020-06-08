@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=0">
+    <link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../lib/pretty-checkbox.css">
+    <script src="../lib/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/vue.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/axios.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/public.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/CorsAjax.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/tencent.js" type="text/javascript" charset="utf-8"></script>
+    <!--    <script src="../js/baidu.js" type="text/javascript" charset="utf-8"></script>-->
+</head>
+<style>
+    .layui-table {
+        margin-top: -10px;
+    }
+
+    .notnull {
+        font-size: 25px;
+        font-weight: 400;
+        color: red;
+        cursor: pointer
+    }
+
+    .hidden_p {
+        color: red;
+        display: none;
+    }
+</style>
+<body>
+<script src="../js/baidu.js" type="text/javascript" charset="utf-8"></script>
+<div style="width: 100%" id="app">
+    <input type="file" id="file_btn" @change="getFile" v-model="upfile" style="display: none"/>
+    <div id="div_left"></div>
+    <div id="div_container" style="position: relative">
+        <p id="htmltitle"></p>
+        <div class="layui-btn-group" style="position: absolute;right: 0px;top:10px">
+            <button onclick="location.reload()" type="button" class="layui-btn layui-btn-xs layui-btn-normal">
+                <i class="layui-icon"> &#xe666;</i> 刷新
+            </button>
+            <button @click="ok()" type="button" class="layui-btn layui-btn-xs">
+                <i class="layui-icon"> &#xe61f;</i> 提交
+            </button>
+        </div>
+        <table class="layui-table" lay-skin="row" lay-size="sm" v-for="(items,index) in pageInfo">
+            <tr>
+                <td style="font-size: 12px" width="100px">
+                    <strong>{{items.mfField.fieldNameDesc}}：</strong>
+                    <span v-if="items.fieldstate=='2'" class="notnull">*</span>
+                </td>
+                <td>
+                    <!-- 单行文本-->
+                    <div v-if="items.mfField.fieldType=='1'">
+                        <input :disabled="items.fieldstate=='0'" class="layui-input" type="text" autocomplete="off"
+                               v-model="items.mfField.defaultValue"
+                               @blur.prevent="changeCount(index,items.mfField.fieldZzTest,items.mfField.fieldZzDesc,$event)"/>
+                        <p :id="'hidden'+index" class="hidden_p">{{items.mfField.defaultValue}}</p>
+                    </div>
+                    <!-- 单选-->
+                    <div v-if="items.mfField.fieldType=='2'">
+                        <p :id="'hidden'+index" class="hidden_p">{{items.mfField.defaultValue}}</p>
+                        <div class="pretty p-icon p-round" v-for="selectvalues in items.mfField.mfValues">
+                            <input :disabled="items.fieldstate=='0'" type="radio"
+                                   :value="selectvalues.value"
+                                   v-model="items.mfField.defaultValue"/>
+                            <div class="state p-success">
+                                <i class="icon mdi mdi-check"></i>
+                                <label>{{selectvalues.value}}</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--  多选-->
+                    <div v-if="items.mfField.fieldType=='3'">
+                        <p :id="'hidden'+index" class="hidden_p">{{items.mfField.defaultValue}}</p>
+                        <div class="pretty p-default layui-inline" v-for="selectvalues in items.mfField.mfValues">
+                            <input :disabled="items.fieldstate=='0'" type="checkbox" :value="selectvalues.value"
+                                   v-model="items.mfField.defaultValue"/>
+                            <div class="state p-success">
+                                <label>{{selectvalues.value}}</label>
+                            </div>
+                        </div>
+                    </div>
+                    <!--  富文本-->
+                    <div v-if="items.mfField.fieldType=='4'">
+                        <textarea :disabled="items.fieldstate=='0'" cols="40" rows="5"
+                                  v-model="items.mfField.defaultValue"></textarea>
+                        <p :id="'hidden'+index" class="hidden_p">{{items.mfField.defaultValue}}</p>
+                    </div>
+                    <!--  文件上传-->
+                    <div v-if="items.mfField.fieldType=='5'">
+                        <p :id="'hidden'+index" class="hidden_p">{{items.mfField.defaultValue}}</p>
+                        <div v-if="true" style="display: inline">
+                            <button :disabled="items.fieldstate=='0'" @click="up(index)" type="button"
+                                    class="layui-btn layui-btn-xs">
+                                <i class="layui-icon">&#xe67c;</i>上传
+                            </button>
+                        </div>
+                        <div :id="'upok'+index" style="display: none">
+                            <span style="color: red"> 上传成功！ </span>
+                            <button @click="yulan(index)" type="button" class="layui-btn layui-btn-xs layui-btn-normal">
+                                <i class="layui-icon">&#xe621;</i>预览
+                            </button>
+                        </div>
+                    </div>
+                    <!--    时间日期-->
+                    <div v-if="items.mfField.fieldType=='6'">
+                        <div v-if="items.mfField.fieldTimetype=='3'">
+                            <input :disabled="items.fieldstate=='0'" class="layui-input" type="time" step="1"
+                                   v-model="items.mfField.defaultValue"/>
+                            <p :id="'hidden'+index" class="hidden_p">{{items.mfField.defaultValue}}</p>
+                        </div>
+                        <div v-if="items.mfField.fieldTimetype=='2'">
+                            <input :disabled="items.fieldstate=='0'" class="layui-input" type="date"
+                                   v-model="items.mfField.defaultValue"/>
+                            <p :id="'hidden'+index" class="hidden_p">{{items.mfField.defaultValue}}</p>
+                        </div>
+                        <div v-if="items.mfField.fieldTimetype=='1'">
+                            <input :disabled="items.fieldstate=='0'" class="layui-input" type="datetime-local" step="1"
+                                   v-model="items.mfField.defaultValue"/>
+                            <p :id="'hidden'+index" class="hidden_p">{{items.mfField.defaultValue}}</p>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div id="div_right"></div>
+</div>
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                pageInfo: [],//一个请求，获取该页面全部渲染信息和全部字段
+                mfPage: {},//表单对象
+                upfile: '',//文件上传隐藏表单的值
+                fileIndex: -1,//当前上传文件是第几个字段
+            }
+        },
+        created() {
+            axios.get("/pageAddSet/addHtmlInitialization?pageid=" + geturl("pageid")).then(res => {
+                var list = res.data;
+                var updOneData = {};
+                $.ajax({
+                    url: '/pageAddList/getTableOneRow',
+                    type: 'get',
+                    data: {
+                        formid: geturl("formid"),
+                        id: geturl("id")
+                    },
+                    async: false,
+                    success: function (r) {
+                        updOneData = r;
+                    }
+                })
+
+                //修改默认值为查出来的值
+                for (let i = 0; i < list.length; i++) {
+                    let field1 = list[i].mfField.fieldName;
+                    if (updOneData["" + field1 + ""] == undefined)
+                        list[i].mfField.defaultValue = "";
+                    else
+                        list[i].mfField.defaultValue = updOneData["" + field1 + ""];
+                }
+                console.log(list)
+
+                for (let i = 0; i < list.length; i++) {
+                    if (list[i].mfField.fieldType == "3" && list[i].mfField.defaultValue != null) {
+                        list[i].mfField.defaultValue = list[i].mfField.defaultValue.split(",");
+                        list[i].mfField.defaultValue = this.delNull(list[i].mfField.defaultValue);
+                    }
+                }
+
+                if (res.data[0].mfPage.canuse != "1") location.href = "403.html";
+                //页面宽占比、标题
+                this.setHtmlWidth(parseInt(100), "修改", "修改");
+
+                //执行嵌入的js
+                eval(res.data[0].mfPage.importscript);
+
+                //渲染页面
+                this.pageInfo = list;
+                this.mfPage = res.data[0].mfPage;
+            }).catch(err => {
+                alert(JSON.stringify(err));
+            });
+        },
+        methods: {
+            //页面宽占比、标题
+            setHtmlWidth(htmlwidth, htmltitle, title) {
+                document.title = title;
+                $('#htmltitle').css({
+                    "font-size": "18px",
+                    "font-weight": "900",
+                    "text-align": "center",
+                    "margin": "20px"
+                });
+                $('#htmltitle').text(htmltitle);
+                $('#div_left').css("width", parseInt((100 - htmlwidth) / 2) + "%");
+                $('#div_container').css("width", htmlwidth + "%");
+                $('#div_container').css("margin", "0 auto");
+                $('#div_right').css("width", parseInt((100 - htmlwidth) / 2) + "%");
+            }
+            ,
+            //移除数组中的空值
+            delNull(list) {
+                var list1 = [];
+                for (let i = 0; i < list.length; i++) {
+                    if (list[i] != "" && list[i] != null && list[i] != undefined)
+                        list1.push(list[i]);
+                }
+                return list1;
+            }
+            ,
+            //上传文件
+            upMyfile(index) {
+                //http://fastdfs.jinxv.cn/
+                //
+                var form = new FormData();
+                form.append("file", $('#file_btn')[0].files[0]);
+                axios.post(this.mfPage.upFileUrl, form).then(res => {
+                    $('#hidden' + index).text(res.data.url);
+                    //显示成功
+                    $("#upok" + index).css("display", "inline");
+                    this.upfile = "";
+                }).catch(err => {
+                    this.upfile = "";
+                    alert("上传失败：" + JSON.stringify(err))
+                });
+            }
+            ,
+            //模拟点击
+            up(index) {
+                this.fileIndex = -1;
+                $('#file_btn').click();//模拟点击
+                this.fileIndex = index;//设置当前上传文件字段
+            }
+            ,
+            //预览
+            yulan(index) {
+                var list = this.pageInfo;
+                if (list[index].mfField.fieldFiletype == "1") {
+                    alert("该文件不支持预览。");
+                } else if (list[index].mfField.fieldFiletype == "2") {
+                    window.open($("#hidden" + index).text());
+                } else if (list[index].mfField.fieldFiletype == "3") {
+                    window.open("http://view.officeapps.live.com/op/view.aspx?src=" + $("#hidden" + index).text());
+                }
+            }
+            ,
+            //隐藏的文件表单切换时
+            getFile() {
+                if (this.fileIndex != -1 && this.upfile != "" && this.upfile != null && this.upfile != undefined) {
+                    var ext = this.upfile.slice(this.upfile.lastIndexOf(".") + 1).toLowerCase();
+                    if (this.pageInfo[this.fileIndex].mfField.fieldFiletype == "2") {
+                        //图片
+                        if (ext != "jpg" && ext != "png" && ext != "gif" && ext != "webp" && ext != "bmp" && ext != "jpeg" && ext != "ico" && ext != "svg") {
+                            layer.msg("选择的文件不是图片格式！");
+                            this.upfile = "";
+                        } else {
+                            this.upMyfile(this.fileIndex);
+                        }
+                    } else if (this.pageInfo[this.fileIndex].mfField.fieldFiletype == "3") {
+                        //office文件
+                        if (ext != "doc" && ext != "docx" && ext != "ppt" && ext != "pptx" && ext != "xls" && ext != "xlsx") {
+                            layer.msg("选择的文件不是office文档！");
+                            this.upfile = "";
+                        } else {
+                            this.upMyfile(this.fileIndex);
+                        }
+                    } else if (this.pageInfo[this.fileIndex].mfField.fieldFiletype == "1") {
+                        this.upMyfile(this.fileIndex);
+                    }
+                }
+            }
+            ,
+            //单行文本失去焦点时，验证正则
+            changeCount(index, zhz, type, e) {
+                if (zhz != null && zhz != "")
+                    if (!new RegExp(zhz).test(e.currentTarget.value)) {
+                        // e.currentTarget.value = "";
+                        // $('#hidden' + index).text("");
+                        var list = this.pageInfo;
+                        list[index].mfField.defaultValue = "";
+                        this.pageInfo = list;
+                        layer.msg('输入的格式错误！要求格式为：' + type, {icon: 2});
+                    }
+            }
+            ,
+            //提交表单
+            ok() {
+                var list = this.pageInfo;
+                var canPost = true;
+                var postjson = [];
+                for (let i = 0; i < list.length; i++) {
+                    var value = $('#hidden' + i).text();//提交时 各个表单的值
+                    if (list[i].mfField.fieldType == "3") {
+                        //多选情况下
+                        let duoxuan = JSON.parse(value);
+                        value = duoxuan.join(",");
+                        //if (value == null) value = "";
+                    }
+                    let key = list[i].mfField.fieldName;//字段名
+                    let ispost = list[i].ispost;//是否提交该字段
+                    if (ispost == "1" && value != null && value != undefined) {
+                        postjson.push({key, value});
+                    }
+                    let mustHave = list[i].fieldstate == 2 ? true : false;//是否不能为空
+                    if (mustHave && (value == "" || value == null || value == undefined)) canPost = false;
+                }
+                if (!canPost) {
+                    layer.msg("必填项不能为空！", {icon: 0});
+                } else {
+                    var postobj = {pageid: geturl("pageid"), id: geturl("id"), data: postjson};
+                    console.log("提交的内容为：" + JSON.stringify(postobj));
+                    axios({
+                        method: 'post',
+                        url: '/pageAddList/updateOneRow',
+                        data: JSON.stringify(postobj),
+                        headers: {"Content-Type": "application/json"}
+                    }).then(res => {
+                        if (res.data)
+                            alert("提交成功！", {icon: 1}, function () {
+                                parent.location.reload();
+                            }); else
+                            alert("失败！", {icon: 2});
+                    }).catch(err => {
+                        alert("遇到了错误：" + JSON.stringify(err), {icon: 2})
+                    });
+                }
+            }
+        },
+        watch: {}
+    })
+    ;
+</script>
+</html>

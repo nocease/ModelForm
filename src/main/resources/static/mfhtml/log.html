@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css"/>
+    <script src="../lib/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/vue.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/axios_nolayer.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/public.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<style>
+    #legend1 {
+        cursor: pointer;
+        margin-top: 20px;
+        font-weight: bold;
+    }
+
+    #div1 {
+        width: 80%;
+        margin: 0 auto;
+    }
+
+    .myvalue {
+        color: #FD482C;
+    }
+
+</style>
+<body>
+<div id="div1">
+    <!--标题-->
+    <fieldset id="fieldset1" class="layui-elem-field layui-field-title">
+        <legend id="legend1" class="layui-anim layui-anim-up" onclick="location.reload()">
+            运行环境实时监控
+        </legend>
+        <div class="layui-field-box">
+            <table class="layui-table" lay-skin="line" lay-size="sm">
+                <thead>
+                <tr>
+                    <th>属性</th>
+                    <th>说明</th>
+                    <th>实时值</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <strong>基础信息</strong>
+                    </td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>ports</td>
+                    <td>项目运行端口</td>
+                    <td class="myvalue">{{env.propertySources[0].properties["local.server.port"].value}}</td>
+
+                </tr>
+                <tr>
+                    <td>OS</td>
+                    <td>服务器操作系统</td>
+                    <td class="myvalue">{{env.propertySources[2].properties["os.name"].value}}</td>
+
+                </tr>
+                <tr>
+                    <td>CPU</td>
+                    <td>服务器CPU架构</td>
+                    <td class="myvalue">{{env.propertySources[2].properties["sun.cpu.isalist"].value}}</td>
+
+                </tr>
+                <tr>
+                    <td>encoding</td>
+                    <td>服务器系统编码</td>
+                    <td class="myvalue">{{env.propertySources[2].properties["sun.jnu.encoding"].value}}</td>
+
+                </tr>
+                <tr>
+                    <td>VM.runtime</td>
+                    <td>Java运行环境</td>
+                    <td class="myvalue">{{env.propertySources[2].properties["java.vm.name"].value}}</td>
+                </tr>
+                <tr>
+                    <td>java.version</td>
+                    <td>JDK版本</td>
+                    <td class="myvalue">{{env.propertySources[2].properties["java.specification.version"].value}}</td>
+                </tr>
+                <tr>
+                    <td>JAVA_HOME</td>
+                    <td>JAVA_HOME</td>
+                    <td class="myvalue">{{env.propertySources[3].properties.JAVA_HOME.value}}</td>
+                </tr>
+                <tr>
+                    <td>max-request-size</td>
+                    <td>一个请求最大可提交的数据量</td>
+                    <td class="myvalue">
+                        {{env.propertySources[4].properties["server.servlet.multipart.max-request-size"].value}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>JVM实时信息</strong>
+                    </td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>jvm.memory.max</td>
+                    <td>JVM最大内存</td>
+                    <td class="myvalue">{{jvm0}}</td>
+                </tr>
+                <tr>
+                    <td>jvm.memory.committed</td>
+                    <td>JVM可用内存</td>
+                    <td class="myvalue">{{jvm1}}</td>
+                </tr>
+                <tr>
+                    <td>jvm.memory.used</td>
+                    <td>JVM已用内存</td>
+                    <td class="myvalue">{{jvm2}}</td>
+                </tr>
+                <tr>
+                    <td>jvm.threads.daemon</td>
+                    <td>JVM守护线程数</td>
+                    <td class="myvalue">{{jvm3}}</td>
+                </tr>
+                <tr>
+                    <td>jvm.threads.live</td>
+                    <td>JVM当前活跃线程数</td>
+                    <td class="myvalue">{{jvm4}}</td>
+                </tr>
+                <tr>
+                    <td>jvm.threads.peak</td>
+                    <td>JVM峰值线程数</td>
+                    <td class="myvalue">{{jvm5}}</td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>CPU实时信息</strong>
+                    </td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>system.cpu.count</td>
+                    <td>CPU数量</td>
+                    <td class="myvalue">{{cpu0}}</td>
+                </tr>
+                <tr>
+                    <td>system.cpu.usage</td>
+                    <td>系统CPU使用率</td>
+                    <td class="myvalue">{{cpu1}}</td>
+                </tr>
+                <tr>
+                    <td>process.cpu.usage</td>
+                    <td>当前进程CPU使用率</td>
+                    <td class="myvalue">{{cpu2}}</td>
+                </tr>
+                <tr>
+                    <td>process.uptime</td>
+                    <td>应用已运行时间</td>
+                    <td class="myvalue">{{cpu3}}</td>
+                </tr>
+                <tr>
+                    <td>http.server.requests.count</td>
+                    <td>http请求发出个数</td>
+                    <td class="myvalue">{{cpu4}} 个</td>
+                </tr>
+                <tr>
+                    <td>http.server.requests.total_time</td>
+                    <td>发起http请求消耗的总时间</td>
+                    <td class="myvalue">{{cpu5}} 秒</td>
+                </tr>
+                <tr>
+                    <td>http.server.requests.max_time</td>
+                    <td>发起一个http请求消耗最大时间</td>
+                    <td class="myvalue">{{cpu6}} 秒</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </fieldset>
+</div>
+</body>
+<script>
+    new Vue({
+        el: "#div1",
+        data: {
+            env: {},
+            jvm0: '', jvm1: '', jvm2: '', jvm3: '', jvm4: '', jvm5: '',
+            cpu0: '', cpu1: '', cpu2: '', cpu3: '', cpu4: '', cpu5: '', cpu6: '',
+        },
+        created() {
+            //获取系统环境env
+            this.getENV();
+
+            //实时信息
+            this.metrics();
+            window.setInterval(() => {
+                setTimeout(this.metrics(), 0)
+            }, 500)
+        },
+        methods: {
+            //获取系统环境env
+            getENV() {
+                axios.get('/actuator/env').then(res => {
+                    this.env = res.data;
+                });
+            },
+            //实时信息
+            metrics() {
+                axios.get('/actuator/metrics/jvm.memory.max').then(res => {
+                    let i = parseInt(res.data.measurements[0].value);
+                    this.jvm0 = i + " 字节" + "（" + (i / 1073741824) + " GB）"
+                });
+                axios.get('/actuator/metrics/jvm.memory.committed').then(res => {
+                    let i = parseInt(res.data.measurements[0].value);
+                    this.jvm1 = i + " 字节" + "（" + (i / 1073741824) + " GB）"
+                });
+                axios.get('/actuator/metrics/jvm.memory.used').then(res => {
+                    let i = parseInt(res.data.measurements[0].value)
+                    this.jvm2 = i + " 字节" + "（" + (i / 1073741824) + " GB）"
+                });
+                axios.get('/actuator/metrics/jvm.threads.daemon').then(res => {
+                    this.jvm3 = (res.data.measurements[0].value)
+                });
+                axios.get('/actuator/metrics/jvm.threads.live').then(res => {
+                    this.jvm4 = (res.data.measurements[0].value)
+                });
+                axios.get('/actuator/metrics/jvm.threads.peak').then(res => {
+                    this.jvm5 = (res.data.measurements[0].value)
+                });
+                axios.get('/actuator/metrics/system.cpu.count').then(res => {
+                    this.cpu0 = (res.data.measurements[0].value)
+                });
+                axios.get('/actuator/metrics/system.cpu.usage').then(res => {
+                    this.cpu1 = (parseFloat(res.data.measurements[0].value) * 100) + " %";
+                });
+                axios.get('/actuator/metrics/process.cpu.usage').then(res => {
+                    this.cpu2 = (parseFloat(res.data.measurements[0].value) * 100) + " %";
+                });
+                axios.get('/actuator/metrics/process.uptime').then(res => {
+                    this.cpu3 = (res.data.measurements[0].value + " 秒")
+                });
+                axios.get('/actuator/metrics/http.server.requests').then(res => {
+                    this.cpu4 = (res.data.measurements[0].value)//请求个数
+                    this.cpu5 = (res.data.measurements[1].value)//请求总时间
+                    this.cpu6 = (res.data.measurements[2].value)//请求最大时间
+                });
+            }
+        },
+        watch: {}
+    })
+</script>
+</html>

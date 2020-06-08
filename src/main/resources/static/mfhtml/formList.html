@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <link rel="stylesheet" type="text/css" href="../lib/layui/css/layui.css"/>
+    <script src="../lib/layui/layui.all.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/axios.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../js/public.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+<div class="formDiv">
+    <table class="layui-table" id="demo" lay-filter="demo" width="100%"></table>
+</div>
+</body>
+<script type="text/javascript">
+    //初始化表格
+    table.render({
+        elem: '#demo',
+        url: '/form/get',
+        page: true,
+        initSort: {
+            field: 'formTime',
+            type: 'desc'
+        },
+        toolbar: '<span class="layui-inline"><div class="layui-inline"><input class="layui-input" style="width:150px" id="searchInput" placeholder="搜索:" /></div>&nbsp<div class="layui-inline"><button class="layui-btn layui-btn-sm" lay-event="search"><i class="layui-icon layui-icon-search"></i></button></div><span>&nbsp;&nbsp;&nbsp;</span><div class="layui-inline"><button class="layui-btn layui-btn-sm layui-icon layui-icon-refresh" onclick="location.reload()"> 刷新数据</button></div><span>&nbsp;&nbsp;&nbsp;</span><div class="layui-inline"><button class="layui-btn layui-btn-sm layui-icon layui-icon-add-1" lay-event="add"> 新建表单</button></div></div>',
+        cols: [
+            [
+                {
+                    type: 'numbers',
+                    title: '序号',
+                    width: '5%'
+                },
+                {
+                    field: 'formId',
+                    title: '编号',
+                    width: '10%'
+                },
+                {
+                    field: 'formTime',
+                    title: '创建时间',
+                    width: "12%",
+                    sort: true
+                },
+                {
+                    field: 'formName',
+                    title: '表单名称',
+                    width: '20%',
+                    sort: true,
+                    edit: 'text'
+                },
+                {
+                    field: 'formTablename',
+                    width: '20%',
+                    title: '对应数据库表名',
+                    sort: true
+                },
+                {
+                    field: 'formDescribe',
+                    title: '备注说明',
+                    width: "23%",
+                    edit: 'text'
+                },
+                {
+                    title: '编辑字段',
+                    width: '10%',
+                    templet: '<div><button class="layui-btn layui-btn-sm" lay-event="bianji">字段设置</button></div>'
+                }
+                // {
+                //     title: '设置页面',
+                //     width: 160,
+                //     templet: '<div><div class="layui-btn-group"> <button type="button" class="layui-btn layui-btn-sm"><i class="layui-icon layui-icon-add-1"></i>增加</button> <button type="button" class="layui-btn layui-btn-sm"><i class="layui-icon layui-icon-align-left"></i>查询</button> </div></div>'
+                // }
+                // {
+                //     field: 'formState',
+                //     title: '状态',
+                //     sort: true,
+                //     width:100,
+                //     templet: function (res) {
+                //         if (res.formState == "0") {
+                //             return "<div><button class='layui-btn layui-btn-sm layui-btn-danger' lay-event='qiyong'>已禁用</button></div>";
+                //         } else if (res.formState == "1") {
+                //             return "<div><button class='layui-btn layui-btn-sm layui-btn-normal' lay-event='jinyong'>已启用</button></div>";
+                //         }
+                //     }
+                // }
+            ]
+        ]
+    });
+
+    //监听编辑
+    table.on('edit(demo)', function (obj) {
+        var data = obj.data; //所在行的所有相关数据
+        var value = obj.value; //得到修改后的值
+        var field = obj.field; //当前列：编辑的字段名
+        if (value == "") {
+            layer.msg("未修改！不能改为空。");
+            tableReload();
+        } else {
+            axios.get('/form/upd?' + field + '=' + value + "&formId=" + data.formId).then(res => {
+                layer.msg("修改成功！")
+            }).catch(err => {
+                layer.msg("操作失败：" + err)
+            });
+        }
+    });
+
+    //监听行事件
+    table.on('tool(demo)', function (obj) {
+        var data = obj.data; //获得当前行数据
+        var layEvent = obj.event; //获得 lay-event
+        //var tr = obj.tr; //获得当前行 tr 的 DOM 对象
+        if (layEvent == "bianji") {
+            var index = layer.open({
+                type: 2,
+                content: 'fieldList.html?tableid=' + data.formId,
+                title: data.formName + "：" + data.formTablename,
+                anim: getRandom(0, 6),
+                area: ['800px', '600px']
+            });
+            layer.full(index);
+        } else if (layEvent == "qiyong") {
+            layer.confirm("确定启用吗？", function () {
+                axios.get('/form/updateState?formState=' + data.formState + '&formId=' + data.formId).then(res => {
+                    layer.msg("已启用！")
+                    tableReload();
+                });
+            });
+        } else if (layEvent == "jinyong") {
+            layer.confirm("确定禁用吗？", function () {
+                axios.get('/form/updateState?formState=' + data.formState + '&formId=' + data.formId).then(res => {
+                    layer.msg("已禁用！")
+                    tableReload();
+                });
+            });
+        }
+    });
+
+    //监听头事件
+    table.on('toolbar(demo)', function (obj) {
+        var layEvent = obj.event;
+        if (layEvent == "search") {
+            tableReload();
+        } else if (layEvent == "add") {
+            layer.open({
+                type: 2,
+                content: 'formAdd.html',
+                title: '新建表单',
+                anim: getRandom(0, 6),
+                area: ['600px', '350px']
+            });
+        }
+    });
+
+    //表格重载
+    function tableReload() {
+        var searchInput = $('#searchInput').val();
+        table.reload('demo', {
+            url: '/form/get',
+            page: {
+                curr: $(".layui-laypage-em").next().html()  //主要代码行
+            },
+            where: {
+                name: searchInput
+            }
+        });
+        $('#searchInput').val(searchInput);
+    }
+</script>
+</html>

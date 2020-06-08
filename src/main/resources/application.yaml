@@ -1,0 +1,72 @@
+spring:
+  #配置数据源
+  #配置MySQL数据库
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://192.168.133.135:3306/modelform
+    username: root
+    password: root
+      #  #配置Oracle数据库
+      #  datasource:
+      #    driver-class-name: oracle.jdbc.driver.OracleDriver
+      #    url: jdbc:oracle:thin:@192.168.133.128:1521:orcl
+      #    username: modelform
+      #    password: modelform
+      #  #配置SQL server数据库
+      #  datasource:
+      #    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      #    url: jdbc:sqlserver://192.168.133.131:1433;DatabaseName=modelform
+      #    username: sa
+      #    password: sa123@
+
+    #配置单机redis
+  redis:
+    host: 192.168.133.132
+    port: 6379
+
+#  #配置redis集群
+#  redis:
+#    host: 192.168.133.132
+#    cluster:
+#      nodes:
+#        - 192.168.133.132:8001
+#        - 192.168.133.132:8002
+#        - 192.168.133.132:8003
+#        - 192.168.133.132:8004
+#        - 192.168.133.132:8005
+#        - 192.168.133.132:8006
+
+#配置启动端口
+server:
+  port: 8080
+  #配置上传文件允许的大小
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 120MB
+
+#配置允许监控
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+#分页个性化设置
+pagehelper:
+  reasonable: true
+
+#扫描pojo,自动给对象起别名,驼峰命名
+mybatis:
+  type-aliases-package: com.nocease.pojo
+  configuration:
+    map-underscore-to-camel-case: true
+#baseMapper所在的位置
+mapper:
+  mappers: com.nocease.util.TkMapper
+
+#在控制台打印显示sql语句
+logging:
+  level:
+    com.nocease: debug

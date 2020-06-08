@@ -1,0 +1,62 @@
+/*首页的css样式*/
+* {
+    transition: all 0.4s;
+}
+
+body {
+    background-color: WhiteSmoke;
+}
+
+.div1 {
+    margin: 0 auto;
+    text-align: center;
+    border-radius: 20px;
+    width: 95%;
+    height: 220px;
+    background-color: #dfe0e1;
+    position: relative;
+    top: 0px;
+}
+
+.div1:hover {
+    top: -10px;
+    cursor: pointer;
+    box-shadow: 10px 10px 10px 3px darkgray;
+}
+
+#fieldset1 {
+    margin-top: 40px;
+    cursor: pointer;
+}
+
+#fieldset1:hover {
+    color: #8D8D8D;
+}
+
+i {
+    line-height: 190px;
+    color: #8a949e;
+    font-size: 200px;
+}
+
+.div1:hover i {
+    color: #009E94;
+}
+
+.div1:hover p {
+    color: black;
+}
+
+p {
+    font-weight: 600;
+    color: #8D8D8D;
+}
+
+.layui-layer-min {
+    /*开启最大化下的最小化按钮*/
+    display: inline-block !important;
+}
+
+.layui-col-md4 {
+    margin-top: 15px;
+}
