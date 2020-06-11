@@ -1,8 +1,0 @@
-file_system: {upURL: /pageAddSet/upToQiniu, accessKey: NY7vQvMNx6_57ro8WoeuORAZ5qMPPASYqIoI9utU,
-  secretKey: 6LjNALYCLpT44i72I2vJGEXqG8tBFSIMAmysRnzX, bucket: nocease, domain: 'http://oss.jinxv.cn/'}
-mail: {mailUser: nocease_code@qq.com, mailPassword: noyjdbvsnuhiebhj}
-dev: true
-sms: {appid: '1400205682', appkey: 3d6f37f2127949d51a5636435a45e543, templateId: '324034',
-  smsSign: 梦中自语网}
-theme: 'false'
-tencent: {APPID: '2130744940', APPKEY: 595DswYegAPWE9KY}
