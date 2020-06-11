@@ -17,24 +17,24 @@ spring:
       #    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
       #    url: jdbc:sqlserver://192.168.133.131:1433;DatabaseName=modelform
       #    username: sa
-      #    password: sa123@
+    #    password: sa123@
 
     #配置单机redis
+  #  redis:
+  #    host: 192.168.133.132
+  #    port: 6379
+
+  #  #配置redis集群
   redis:
     host: 192.168.133.132
-    port: 6379
-
-#  #配置redis集群
-#  redis:
-#    host: 192.168.133.132
-#    cluster:
-#      nodes:
-#        - 192.168.133.132:8001
-#        - 192.168.133.132:8002
-#        - 192.168.133.132:8003
-#        - 192.168.133.132:8004
-#        - 192.168.133.132:8005
-#        - 192.168.133.132:8006
+    cluster:
+      nodes:
+        - 192.168.133.132:8001
+        - 192.168.133.132:8002
+        - 192.168.133.132:8003
+        - 192.168.133.132:8004
+        - 192.168.133.132:8005
+        - 192.168.133.132:8006
 
 #配置启动端口
 server:
